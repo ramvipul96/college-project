@@ -2,15 +2,16 @@ import { useState } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import {
   LayoutDashboard, Bell, CheckSquare, Clock,
-  Users, AlertTriangle, Menu, X, Shield, LogOut, Settings,
+  Users, AlertTriangle, Menu, X, Shield,
+  LogOut, Settings, UserCircle,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/tasks", label: "Tasks", icon: CheckSquare },
-  { path: "/reminders", label: "Reminders", icon: Clock },
-  { path: "/notifications", label: "Notifications", icon: Bell },
+  { path: "/",                   label: "Dashboard",          icon: LayoutDashboard },
+  { path: "/tasks",              label: "Tasks",              icon: CheckSquare },
+  { path: "/reminders",          label: "Reminders",          icon: Clock },
+  { path: "/notifications",      label: "Notifications",      icon: Bell },
   { path: "/emergency-contacts", label: "Emergency Contacts", icon: Users },
 ];
 
@@ -19,19 +20,19 @@ const AppLayout = ({ children }) => {
   const { user, loading, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "var(--color-text-muted)" }}>Loading...</div>;
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "var(--color-text-muted)" }}>
+      Loading...
+    </div>
+  );
   if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="app-wrapper">
-      {/* Desktop Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon primary"><Shield size={20} /></div>
-          <div>
-            <h1>Guardian</h1>
-            <p>Alert & Reminder System</p>
-          </div>
+          <div><h1>Guardian</h1><p>Alert & Reminder System</p></div>
         </div>
         <nav className="sidebar-nav">
           {navItems.map((item) => {
@@ -44,16 +45,22 @@ const AppLayout = ({ children }) => {
           })}
         </nav>
         <div className="sidebar-footer">
+          <Link to="/profile" className={`sidebar-link ${location.pathname === "/profile" ? "active" : ""}`}>
+            <UserCircle />My Profile
+          </Link>
           {user.role === "admin" && (
             <Link to="/admin" className="sidebar-link"><Settings />Admin Panel</Link>
           )}
-          <button className="sidebar-link" onClick={logout} style={{ background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left" }}>
+          <button
+            className="sidebar-link"
+            onClick={logout}
+            style={{ background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left", color: "var(--color-danger)" }}
+          >
             <LogOut />Sign Out
           </button>
         </div>
       </aside>
 
-      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div>
           <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} />
@@ -74,12 +81,12 @@ const AppLayout = ({ children }) => {
                   </Link>
                 );
               })}
+              <Link to="/profile" onClick={() => setSidebarOpen(false)} className="sidebar-link"><UserCircle />My Profile</Link>
             </nav>
           </aside>
         </div>
       )}
 
-      {/* Main Content */}
       <div className="main-content">
         <header className="mobile-header">
           <button onClick={() => setSidebarOpen(true)}><Menu size={20} /></button>
@@ -89,7 +96,7 @@ const AppLayout = ({ children }) => {
           <div style={{ width: 20 }} />
         </header>
         <main className="main-inner">{children}</main>
-        <button className="floating-alert-btn" onClick={() => alert("🚨 Personal Alert Triggered! Emergency contacts will be notified.")} title="Personal Alert">
+        <button className="floating-alert-btn" onClick={() => alert("🚨 Personal Alert Triggered!")} title="Personal Alert">
           <AlertTriangle />
         </button>
         <nav className="mobile-bottom-nav">

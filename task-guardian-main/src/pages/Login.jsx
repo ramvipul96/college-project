@@ -6,25 +6,20 @@ import { useAuth } from "../context/AuthContext";
 const Login = () => {
   const navigate = useNavigate();
   const { login, register } = useAuth();
-  const [tab, setTab] = useState("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
+  const [tab, setTab]       = useState("login");
+  const [form, setForm]     = useState({ name: "", email: "", password: "" });
+  const [error, setError]   = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault(); setError(""); setLoading(true);
     try {
       const user = tab === "login"
         ? await login(form.email, form.password)
         : await register(form.name, form.email, form.password);
       navigate(user.role === "admin" ? "/admin" : "/");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -82,5 +77,4 @@ const Login = () => {
     </div>
   );
 };
-
 export default Login;

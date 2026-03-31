@@ -1,31 +1,62 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
 import { adminAPI } from "../../services/api";
 
+const statusBadge = { true: "badge-green", false: "badge-gray" };
+const filters = ["All", "Active", "Disabled"];
+
 const AdminUsers = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers]   = useState([]);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+
   const load = () => adminAPI.getUsers().then(d => setUsers(d.data)).catch(console.error);
   useEffect(() => { load(); }, []);
+
   const toggle = async (id) => { await adminAPI.toggleUser(id); load(); };
+
+  const filtered = users.filter(u => {
+    const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const matchFilter = filter === "All" || (filter === "Active" ? u.isActive : !u.isActive);
+    return matchSearch && matchFilter;
+  });
+
   return (
     <div className="section-gap">
-      <div className="page-header"><div><h1>Manage Users</h1><p>{users.length} total users</p></div></div>
-      <div className="card">
-        <div className="card-body" style={{ padding: 0, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
-            <thead><tr style={{ borderBottom: "1px solid var(--color-border)" }}>{["Name","Email","Role","Status","Action"].map(h => <th key={h} style={{ padding: "12px 16px", textAlign: "left", color: "var(--color-text-muted)", fontWeight: 500 }}>{h}</th>)}</tr></thead>
-            <tbody>
-              {users.map(u => (
-                <tr key={u._id} style={{ borderBottom: "1px solid var(--color-border-light)" }}>
-                  <td style={{ padding: "12px 16px", fontWeight: 500 }}>{u.name}</td>
-                  <td style={{ padding: "12px 16px", color: "var(--color-text-muted)" }}>{u.email}</td>
-                  <td style={{ padding: "12px 16px" }}><span className={`badge ${u.role === "admin" ? "badge-red" : "badge-blue"}`}>{u.role}</span></td>
-                  <td style={{ padding: "12px 16px" }}><span className={`badge ${u.isActive ? "badge-green" : "badge-gray"}`}>{u.isActive ? "Active" : "Disabled"}</span></td>
-                  <td style={{ padding: "12px 16px" }}><button className={`btn btn-sm ${u.isActive ? "btn-outline" : "btn-primary"}`} onClick={() => toggle(u._id)}>{u.isActive ? "Disable" : "Enable"}</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="page-header">
+        <div><h1>Manage Users</h1><p>{users.length} registered users</p></div>
+      </div>
+      <div style={{ display: "flex", gap: "var(--space-md)", flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
+          <Search size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
+          <input className="form-input" style={{ paddingLeft: 36 }} placeholder="Search users..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
+        <div className="filter-bar">
+          {filters.map(f => <button key={f} className={`filter-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>{f}</button>)}
+        </div>
+      </div>
+      <div className="table-container">
+        <table className="table">
+          <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+          <tbody>
+            {filtered.map(user => (
+              <tr key={user._id}>
+                <td>
+                  <div style={{ fontWeight: 500 }}>{user.name}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>{user.email}</div>
+                </td>
+                <td><span className={`badge ${user.role === "admin" ? "badge-red" : "badge-blue"}`}>{user.role}</span></td>
+                <td><span className={`badge ${user.isActive ? "badge-green" : "badge-gray"}`}>{user.isActive ? "Active" : "Disabled"}</span></td>
+                <td style={{ color: "var(--color-text-secondary)", fontSize: "0.85rem" }}>{new Date(user.createdAt).toLocaleDateString()}</td>
+                <td>
+                  <button className="btn btn-outline btn-sm" onClick={() => toggle(user._id)}>
+                    {user.isActive ? "Disable" : "Enable"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

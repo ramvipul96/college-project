@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const emergencyContactSchema = new mongoose.Schema({
   user:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   name:          { type: String, required: true, trim: true },
@@ -8,6 +7,6 @@ const emergencyContactSchema = new mongoose.Schema({
   relationship:  { type: String, default: '' },
   birthdayMonth: { type: Number, min: 1, max: 12 },
   birthdayDay:   { type: Number, min: 1, max: 31 },
+  birthdayEmailSentYear: { type: Number },
 }, { timestamps: true });
-
 module.exports = mongoose.model('EmergencyContact', emergencyContactSchema);
