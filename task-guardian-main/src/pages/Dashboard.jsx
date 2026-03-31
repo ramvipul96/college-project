@@ -1,71 +1,53 @@
-import { Shield, CheckSquare, Clock, AlertTriangle, Activity } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { dashboardAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
-const stats = [
-  { label: "Tasks Completed", value: "12", icon: CheckSquare, color: "green" },
-  { label: "Active Reminders", value: "5", icon: Clock, color: "blue" },
-  { label: "Alerts Sent", value: "2", icon: AlertTriangle, color: "red" },
-  { label: "Days Active", value: "34", icon: Activity, color: "yellow" },
-];
-
-const recentActivity = [
-  { text: "Checked in successfully", time: "2 min ago", color: "green" },
-  { text: "Task 'Call doctor' completed", time: "1 hour ago", color: "blue" },
-  { text: "Missed check-in alert sent", time: "Yesterday", color: "red" },
-  { text: "Reminder 'Take medication' triggered", time: "Yesterday", color: "yellow" },
-  { text: "Emergency contact updated", time: "2 days ago", color: "blue" },
-];
+const StatCard = ({ icon, label, value, color, to }) => (
+  <Link to={to} className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition block">
+    <div className="flex items-center justify-between">
+      <div><p className="text-sm text-gray-500 mb-1">{label}</p><p className={`text-3xl font-bold ${color}`}>{value ?? '—'}</p></div>
+      <span className="text-3xl">{icon}</span>
+    </div>
+  </Link>
+);
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    dashboardAPI.getStats().then(d => setStats(d.data)).catch(e => setError(e.message)).finally(() => setLoading(false));
+  }, []);
+
   return (
-    <div className="section-gap">
-      <div className="page-header">
-        <div>
-          <h1>Welcome back, User 👋</h1>
-          <p>Here's your safety overview for today</p>
-        </div>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Welcome back, {user?.name?.split(' ')[0]} 👋</h1>
+        <p className="text-gray-500 mt-1">Here's what's happening today.</p>
       </div>
-
-      <div className="checkin-hero">
-        <h2>You're Safe & Active</h2>
-        <p>Last check-in was 2 minutes ago. Your emergency contacts are informed of your status.</p>
-        <button className="checkin-btn">
-          <Shield size={18} />
-          I'm OK — Check In
-        </button>
-      </div>
-
-      <div className="stats-grid">
-        {stats.map((stat) => (
-          <div className="stat-card" key={stat.label}>
-            <div className={`stat-icon ${stat.color}`}>
-              <stat.icon />
-            </div>
-            <div className="stat-info">
-              <h3>{stat.value}</h3>
-              <p>{stat.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem" }}>Recent Activity</h3>
+      {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">{error}</div>}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array(6).fill(0).map((_, i) => <div key={i} className="bg-white rounded-xl border border-gray-100 p-6 h-28 animate-pulse"><div className="h-4 bg-gray-200 rounded w-1/2 mb-3" /><div className="h-8 bg-gray-200 rounded w-1/4" /></div>)}
         </div>
-        <div className="card-body">
-          <div className="activity-list">
-            {recentActivity.map((item, i) => (
-              <div className="activity-item" key={i}>
-                <div className={`activity-dot ${item.color}`} />
-                <span className="activity-text">{item.text}</span>
-                <span className="activity-time">{item.time}</span>
-              </div>
-            ))}
-          </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StatCard icon="📋" label="Total Tasks"          value={stats?.totalTasks}           color="text-indigo-600" to="/tasks" />
+          <StatCard icon="✅" label="Completed Tasks"      value={stats?.completedTasks}        color="text-green-600"  to="/tasks" />
+          <StatCard icon="⏳" label="Pending Tasks"        value={stats?.pendingTasks}          color="text-yellow-600" to="/tasks" />
+          <StatCard icon="⏰" label="Active Reminders"     value={stats?.activeReminders}       color="text-blue-600"   to="/reminders" />
+          <StatCard icon="🔔" label="Unread Notifications" value={stats?.unreadNotifications}   color="text-red-500"    to="/notifications" />
+          <StatCard icon="📞" label="Emergency Contacts"   value={stats?.emergencyContacts}     color="text-purple-600" to="/emergency-contacts" />
         </div>
+      )}
+      <div className="mt-10 bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+        <h2 className="text-lg font-semibold text-indigo-800 mb-2">📧 Email Notifications Active</h2>
+        <p className="text-sm text-indigo-600">Guardian automatically sends email reminders, task due alerts, and birthday wishes!</p>
       </div>
     </div>
   );
 };
-
 export default Dashboard;

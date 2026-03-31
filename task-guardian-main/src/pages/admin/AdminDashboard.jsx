@@ -1,84 +1,22 @@
-import { Users, AlertTriangle, Activity, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { adminAPI } from '../../services/api';
 
-const stats = [
-  { label: "Total Users", value: "156", icon: Users, color: "blue" },
-  { label: "Active Today", value: "89", icon: Activity, color: "green" },
-  { label: "Alerts Triggered", value: "12", icon: AlertTriangle, color: "red" },
-  { label: "Missed Check-ins", value: "7", icon: ShieldCheck, color: "yellow" },
-];
-
-const recentAlerts = [
-  { user: "Ankit Verma", type: "Inactivity", status: "Escalated", time: "15 min ago" },
-  { user: "Sneha Gupta", type: "Missed check-in", status: "Pending", time: "1 hour ago" },
-  { user: "Ravi Kumar", type: "Inactivity", status: "Resolved", time: "3 hours ago" },
-  { user: "Priya Shah", type: "Emergency trigger", status: "Escalated", time: "Yesterday" },
-];
-
-const systemLog = [
-  { text: "System health check passed", time: "5 min ago", color: "green" },
-  { text: "Email notification service restarted", time: "2 hours ago", color: "blue" },
-  { text: "3 new user registrations", time: "Today", color: "blue" },
-  { text: "Database backup completed", time: "Yesterday", color: "green" },
-];
-
-const statusBadge = { Escalated: "badge-red", Pending: "badge-yellow", Resolved: "badge-green" };
-
-const AdminDashboard = () => (
-  <div className="section-gap">
-    <div className="page-header">
-      <div>
-        <h1>Admin Dashboard</h1>
-        <p>System overview and monitoring</p>
+const AdminDashboard = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  useEffect(() => { adminAPI.getStats().then(d => setStats(d.data)).catch(e => setError(e.message)).finally(() => setLoading(false)); }, []);
+  const cards = [{ label:'Total Users', value:stats?.userCount, icon:'👥', color:'text-indigo-600' }, { label:'Total Tasks', value:stats?.taskCount, icon:'✅', color:'text-green-600' }, { label:'Total Reminders', value:stats?.reminderCount, icon:'⏰', color:'text-blue-600' }];
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+      {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {cards.map(({ label, value, icon, color }) => (
+          <div key={label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6"><div className="flex justify-between items-center"><div><p className="text-sm text-gray-500">{label}</p><p className={`text-3xl font-bold mt-1 ${color}`}>{loading ? '—' : value}</p></div><span className="text-3xl">{icon}</span></div></div>
+        ))}
       </div>
     </div>
-
-    <div className="stats-grid">
-      {stats.map((stat) => (
-        <div className="stat-card" key={stat.label}>
-          <div className={`stat-icon ${stat.color}`}><stat.icon /></div>
-          <div className="stat-info"><h3>{stat.value}</h3><p>{stat.label}</p></div>
-        </div>
-      ))}
-    </div>
-
-    <div className="grid-2">
-      <div className="card">
-        <div className="card-header"><h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.05rem" }}>Recent Alerts</h3></div>
-        <div className="card-body" style={{ padding: 0 }}>
-          <div className="table-container" style={{ border: "none", borderRadius: 0 }}>
-            <table className="table">
-              <thead><tr><th>User</th><th>Type</th><th>Status</th><th>Time</th></tr></thead>
-              <tbody>
-                {recentAlerts.map((a, i) => (
-                  <tr key={i}>
-                    <td style={{ fontWeight: 500 }}>{a.user}</td>
-                    <td>{a.type}</td>
-                    <td><span className={`badge ${statusBadge[a.status]}`}>{a.status}</span></td>
-                    <td style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>{a.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-header"><h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.05rem" }}>System Activity</h3></div>
-        <div className="card-body">
-          <div className="activity-list">
-            {systemLog.map((item, i) => (
-              <div className="activity-item" key={i}>
-                <div className={`activity-dot ${item.color}`} />
-                <span className="activity-text">{item.text}</span>
-                <span className="activity-time">{item.time}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
+  );
+};
 export default AdminDashboard;

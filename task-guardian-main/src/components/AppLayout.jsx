@@ -1,150 +1,51 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Bell,
-  CheckSquare,
-  Clock,
-  Users,
-  AlertTriangle,
-  Menu,
-  X,
-  Shield,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { Navigate, Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/tasks", label: "Tasks", icon: CheckSquare },
-  { path: "/reminders", label: "Reminders", icon: Clock },
-  { path: "/notifications", label: "Notifications", icon: Bell },
-  { path: "/emergency-contacts", label: "Emergency Contacts", icon: Users },
+  { path: '/', label: 'Dashboard', icon: '📊' },
+  { path: '/tasks', label: 'Tasks', icon: '✅' },
+  { path: '/reminders', label: 'Reminders', icon: '⏰' },
+  { path: '/notifications', label: 'Notifications', icon: '🔔' },
+  { path: '/emergency-contacts', label: 'Emergency Contacts', icon: '📞' },
 ];
 
 const AppLayout = ({ children }) => {
-  const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  const { user, loading, logout } = useAuth();
+  const { pathname } = useLocation();
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
   return (
-    <div className="app-wrapper">
-      {/* Desktop Sidebar */}
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <div className="sidebar-brand-icon primary">
-            <Shield size={20} />
-          </div>
-          <div>
-            <h1>Guardian</h1>
-            <p>Alert & Reminder System</p>
-          </div>
+    <div className="flex min-h-screen bg-gray-50">
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center gap-2"><span className="text-2xl">🛡️</span><span className="text-xl font-bold text-indigo-600">Guardian</span></div>
+          <p className="text-xs text-gray-500 mt-1">Personal Alert System</p>
         </div>
-
-        <nav className="sidebar-nav">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`sidebar-link ${isActive ? "active" : ""}`}
-              >
-                <item.icon />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map(({ path, label, icon }) => (
+            <Link key={path} to={path} className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition ${pathname === path ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'}`}>
+              <span>{icon}</span>{label}
+            </Link>
+          ))}
+          {user.role === 'admin' && (
+            <Link to="/admin" className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition mt-4 ${pathname.startsWith('/admin') ? 'bg-purple-50 text-purple-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <span>⚙️</span> Admin Panel
+            </Link>
+          )}
         </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/admin" className="sidebar-link">
-            <Settings />
-            Admin Panel
-          </Link>
-          <Link to="/login" className="sidebar-link">
-            <LogOut />
-            Sign Out
-          </Link>
+        <div className="p-4 border-t border-gray-100">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">{user.name?.[0]?.toUpperCase()}</div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
+              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+            </div>
+          </div>
+          <button onClick={logout} className="w-full text-sm text-red-500 hover:text-red-700 hover:bg-red-50 py-2 rounded-lg transition">Sign Out</button>
         </div>
       </aside>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div>
-          <div className="mobile-overlay" onClick={() => setSidebarOpen(false)} />
-          <aside className="mobile-sidebar">
-            <div className="mobile-sidebar-header">
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Shield size={20} style={{ color: "var(--color-primary)" }} />
-                <span style={{ fontWeight: 700, fontFamily: "var(--font-display)" }}>Guardian</span>
-              </div>
-              <button onClick={() => setSidebarOpen(false)} style={{ color: "var(--color-text-muted)" }}>
-                <X size={20} />
-              </button>
-            </div>
-            <nav className="sidebar-nav">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`sidebar-link ${isActive ? "active" : ""}`}
-                  >
-                    <item.icon />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </aside>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <div className="main-content">
-        <header className="mobile-header">
-          <button onClick={() => setSidebarOpen(true)}>
-            <Menu size={20} />
-          </button>
-          <div className="mobile-header-brand">
-            <Shield size={20} style={{ color: "var(--color-primary)" }} />
-            Guardian
-          </div>
-          <div style={{ width: 20 }} />
-        </header>
-
-        <main className="main-inner">{children}</main>
-
-        {/* Floating Alert Button */}
-        <button
-          className="floating-alert-btn"
-          onClick={() => alert("🚨 Personal Alert Triggered! Emergency contacts will be notified.")}
-          title="Personal Alert"
-        >
-          <AlertTriangle />
-        </button>
-
-        {/* Mobile Bottom Nav */}
-        <nav className="mobile-bottom-nav">
-          {navItems.slice(0, 4).map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`mobile-nav-link ${isActive ? "active" : ""}`}
-              >
-                <item.icon />
-                {item.label.split(" ")[0]}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+      <main className="flex-1 overflow-auto p-8">{children}</main>
     </div>
   );
 };
-
 export default AppLayout;
