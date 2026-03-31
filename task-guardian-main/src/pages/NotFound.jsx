@@ -1,12 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { Shield } from "lucide-react";
 const NotFound = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <div className="text-7xl mb-4">🛡️</div>
-      <h1 className="text-4xl font-bold text-gray-800 mb-2">404</h1>
-      <p className="text-gray-500 mb-6">Page not found</p>
-      <Link to="/" className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition">Go Home</Link>
-    </div>
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "var(--space-md)" }}>
+    <Shield size={64} style={{ color: "var(--color-primary)" }} />
+    <h1 style={{ fontSize: "4rem", fontWeight: 800 }}>404</h1>
+    <p style={{ color: "var(--color-text-muted)" }}>Page not found</p>
+    <Link to="/" className="btn btn-primary">Go Home</Link>
   </div>
 );
 export default NotFound;

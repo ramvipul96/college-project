@@ -1,60 +1,86 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Shield, Mail, Lock, User } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
-  const { login, register } = useAuth();
   const navigate = useNavigate();
-  const [isRegister, setIsRegister] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [error, setError] = useState('');
+  const { login, register } = useAuth();
+  const [tab, setTab] = useState("login");
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      const user = isRegister ? await register(form.name, form.email, form.password) : await login(form.email, form.password);
-      navigate(user.role === 'admin' ? '/admin' : '/');
-    } catch (err) { setError(err.message); } finally { setLoading(false); }
+      const user = tab === "login"
+        ? await login(form.email, form.password)
+        : await register(form.name, form.email, form.password);
+      navigate(user.role === "admin" ? "/admin" : "/");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <div className="text-4xl mb-2">🛡️</div>
-          <h1 className="text-2xl font-bold text-gray-800">Guardian</h1>
-          <p className="text-gray-500 text-sm mt-1">Personal Alert & Reminder System</p>
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-header">
+          <div className="icon"><Shield size={28} /></div>
+          <h1>Guardian</h1>
+          <p>Personal Alert & Reminder System</p>
         </div>
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isRegister && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" required value={form.name} onChange={set('name')} placeholder="John Doe" className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <div className="login-tabs">
+          <button className={`login-tab ${tab === "login" ? "active" : ""}`} onClick={() => { setTab("login"); setError(""); }}>Sign In</button>
+          <button className={`login-tab ${tab === "register" ? "active" : ""}`} onClick={() => { setTab("register"); setError(""); }}>Register</button>
+        </div>
+        {error && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: 8, fontSize: "0.85rem", marginBottom: "var(--space-md)" }}>
+            {error}
+          </div>
+        )}
+        <form className="login-form" onSubmit={handleSubmit}>
+          {tab === "register" && (
+            <div className="form-group">
+              <label className="form-label">Full Name</label>
+              <div style={{ position: "relative" }}>
+                <User size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
+                <input className="form-input" style={{ paddingLeft: 36 }} placeholder="Your full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+              </div>
             </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" required value={form.email} onChange={set('email')} placeholder="you@example.com" className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <div style={{ position: "relative" }}>
+              <Mail size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
+              <input className="form-input" style={{ paddingLeft: 36 }} type="email" placeholder="you@example.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input type="password" required value={form.password} onChange={set('password')} placeholder="••••••••" className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <div style={{ position: "relative" }}>
+              <Lock size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
+              <input className="form-input" style={{ paddingLeft: 36 }} type="password" placeholder="••••••••" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+            </div>
           </div>
-          <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-60">
-            {loading ? 'Please wait...' : isRegister ? 'Create Account' : 'Sign In'}
+          <button className="btn btn-primary btn-lg" type="submit" disabled={loading} style={{ width: "100%", marginTop: "var(--space-sm)", opacity: loading ? 0.7 : 1 }}>
+            {loading ? "Please wait..." : tab === "login" ? "Sign In" : "Create Account"}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-6">
-          {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <button onClick={() => { setIsRegister(!isRegister); setError(''); }} className="text-indigo-600 font-medium hover:underline">
-            {isRegister ? 'Sign In' : 'Register'}
-          </button>
+        <p style={{ textAlign: "center", fontSize: "0.78rem", color: "var(--color-text-muted)", marginTop: "var(--space-lg)" }}>
+          {tab === "login" ? "Don't have an account? " : "Already have an account? "}
+          <span style={{ color: "var(--color-primary)", cursor: "pointer", fontWeight: 500 }} onClick={() => { setTab(tab === "login" ? "register" : "login"); setError(""); }}>
+            {tab === "login" ? "Register" : "Sign In"}
+          </span>
         </p>
       </div>
     </div>
   );
 };
+
 export default Login;

@@ -9,21 +9,34 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (isLoggedIn()) {
-      authAPI.me().then(d => setUser(d.user)).catch(() => clearToken()).finally(() => setLoading(false));
-    } else { setLoading(false); }
+      authAPI.me()
+        .then(d => setUser(d.user))
+        .catch(() => clearToken())
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const login = async (email, password) => {
     const data = await authAPI.login(email, password);
-    saveToken(data.token); setUser(data.user); return data.user;
+    saveToken(data.token);
+    setUser(data.user);
+    return data.user;
   };
   const register = async (name, email, password) => {
     const data = await authAPI.register(name, email, password);
-    saveToken(data.token); setUser(data.user); return data.user;
+    saveToken(data.token);
+    setUser(data.user);
+    return data.user;
   };
   const logout = () => { clearToken(); setUser(null); };
 
-  return <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);

@@ -1,40 +1,47 @@
-import { Navigate, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useLocation, Navigate } from "react-router-dom";
+import { Shield, LayoutDashboard, Users, Bell, Settings, LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const adminNav = [
-  { path: '/admin', label: 'Dashboard', icon: '📊' },
-  { path: '/admin/users', label: 'Users', icon: '👥' },
-  { path: '/admin/alerts', label: 'Alerts', icon: '🔔' },
-  { path: '/admin/settings', label: 'Settings', icon: '⚙️' },
+  { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/users", label: "Users", icon: Users },
+  { path: "/admin/alerts", label: "Alerts", icon: Bell },
+  { path: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 const AdminLayout = ({ children }) => {
   const { user, loading, logout } = useAuth();
   const { pathname } = useLocation();
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
+
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>Loading...</div>;
+  if (!user || user.role !== "admin") return <Navigate to="/" replace />;
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 bg-purple-900 text-white flex flex-col">
-        <div className="p-6 border-b border-purple-800">
-          <div className="flex items-center gap-2"><span className="text-2xl">🛡️</span><span className="text-xl font-bold">Guardian</span></div>
-          <span className="text-xs text-purple-300 mt-1 block">Admin Panel</span>
+    <div className="app-wrapper">
+      <aside className="sidebar" style={{ background: "var(--color-sidebar-admin, #1e1b4b)" }}>
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-icon"><Shield size={20} /></div>
+          <div><h1>Guardian</h1><p>Admin Panel</p></div>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {adminNav.map(({ path, label, icon }) => (
-            <Link key={path} to={path} className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition ${pathname === path ? 'bg-purple-700 text-white' : 'text-purple-200 hover:bg-purple-800'}`}>
-              <span>{icon}</span>{label}
+        <nav className="sidebar-nav">
+          {adminNav.map(({ path, label, icon: Icon }) => (
+            <Link key={path} to={path} className={`sidebar-link ${pathname === path ? "active" : ""}`}>
+              <Icon />{label}
             </Link>
           ))}
-          <Link to="/" className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-purple-300 hover:bg-purple-800 mt-4">← Back to App</Link>
+          <Link to="/" className="sidebar-link">← Back to App</Link>
         </nav>
-        <div className="p-4 border-t border-purple-800">
-          <p className="text-sm text-purple-200 truncate">{user.name}</p>
-          <button onClick={logout} className="text-xs text-purple-400 hover:text-red-300 mt-1 transition">Sign Out</button>
+        <div className="sidebar-footer">
+          <button className="sidebar-link" onClick={logout} style={{ background: "none", border: "none", cursor: "pointer", width: "100%", textAlign: "left" }}>
+            <LogOut />Sign Out
+          </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-8">{children}</main>
+      <div className="main-content">
+        <main className="main-inner">{children}</main>
+      </div>
     </div>
   );
 };
+
 export default AdminLayout;

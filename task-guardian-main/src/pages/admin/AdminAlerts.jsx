@@ -1,20 +1,20 @@
 const AdminAlerts = () => (
-  <div>
-    <h1 className="text-2xl font-bold text-gray-800 mb-6">System Alerts</h1>
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
+  <div className="section-gap">
+    <div className="page-header"><div><h1>System Alerts</h1><p>Email & cron job status</p></div></div>
+    <div className="card"><div className="card-body" style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
       {[
-        { icon:'✅', label:'Reminder cron',     desc:'Runs every minute — sends emails for due reminders' },
-        { icon:'✅', label:'Task due cron',      desc:'Runs every 10 minutes — alerts 1 hour before due date' },
-        { icon:'✅', label:'Birthday cron',      desc:'Runs daily at 8 AM — sends birthday wish emails' },
-        { icon:'✅', label:'Welcome email',      desc:'Sent immediately on user registration' },
-        { icon:'✅', label:'Notification email', desc:'Sent immediately when a notification is created' },
-      ].map(({ icon, label, desc }) => (
-        <div key={label} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-          <span className="text-xl text-green-600">{icon}</span>
-          <div><p className="font-medium text-gray-800">{label}</p><p className="text-sm text-gray-500">{desc}</p></div>
+        { label: "Reminder cron", desc: "Runs every minute — sends emails for due reminders" },
+        { label: "Task due cron", desc: "Runs every 10 minutes — alerts 1 hour before due date" },
+        { label: "Birthday cron", desc: "Runs daily at 8 AM — sends birthday wish emails" },
+        { label: "Welcome email", desc: "Sent immediately on user registration" },
+        { label: "Notification email", desc: "Sent immediately when a notification is created" },
+      ].map(({ label, desc }) => (
+        <div key={label} style={{ display: "flex", alignItems: "flex-start", gap: "var(--space-md)", padding: "var(--space-md)", background: "var(--color-bg-secondary)", borderRadius: 8 }}>
+          <span style={{ color: "var(--color-success)", fontSize: "1.2rem" }}>✅</span>
+          <div><p style={{ fontWeight: 600, marginBottom: 2 }}>{label}</p><p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>{desc}</p></div>
         </div>
       ))}
-    </div>
+    </div></div>
   </div>
 );
 export default AdminAlerts;
